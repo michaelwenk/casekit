@@ -19,6 +19,4 @@ public class ElucidationOptions {
     private boolean useElim;
     private int elimP1;
     private int elimP2;
-    private double shiftTolerance;
-    private double maximumAverageDeviation;
 }
