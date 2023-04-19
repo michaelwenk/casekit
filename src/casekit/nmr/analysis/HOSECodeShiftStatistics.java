@@ -101,6 +101,8 @@ public class HOSECodeShiftStatistics {
                         Utils.placeExplicitHydrogens(structure);
                     } catch (final CDKException | IOException | ClassNotFoundException e) {
                         e.printStackTrace();
+
+                        return false;
                     }
                 } else {
                     Utils.convertImplicitToExplicitHydrogens(structure);
