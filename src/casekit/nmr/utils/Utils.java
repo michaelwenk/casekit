@@ -88,7 +88,7 @@ public class Utils {
 
     public static String getSmilesFromAtomContainer(final IAtomContainer ac) throws CDKException {
         // SmiFlavor.Unique instead of SmiFlavor.Absolute because current errors with InChI generator
-        final SmilesGenerator smilesGenerator = new SmilesGenerator(SmiFlavor.Unique);
+        final SmilesGenerator smilesGenerator = new SmilesGenerator(SmiFlavor.Isomeric);
 
         return smilesGenerator.create(ac);
     }
@@ -627,8 +627,7 @@ public class Utils {
                            : structure.getProperty("SMILES_ID", String.class)
                                       .split("\\.")[0]);
         }
-        final String mf = molecularFormularToString(
-                casekit.nmr.utils.Utils.getMolecularFormulaFromAtomContainer(structure));
+        final String mf = molecularFormularToString(getMolecularFormulaFromAtomContainer(structure));
         meta.put("mfOriginal", mf);
         meta.put("mf", buildAlphabeticMF(mf));
         try {

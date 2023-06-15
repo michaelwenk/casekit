@@ -89,7 +89,7 @@ public class NMRShiftDB {
      * @see DataSet
      */
     public static List<DataSet> getDataSetsFromNMRShiftDB(final String pathToNMRShiftDB,
-                                                          final String[] nuclei) throws FileNotFoundException, CDKException {
+                                                          final String[] nuclei) throws FileNotFoundException {
         final List<DataSet> dataSets = new ArrayList<>();
         final IteratingSDFReader iterator = new IteratingSDFReader(new FileReader(pathToNMRShiftDB),
                                                                    SilentChemObjectBuilder.getInstance());
@@ -105,85 +105,91 @@ public class NMRShiftDB {
 
         while (iterator.hasNext()) {
             structure = iterator.next();
-            AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(structure);
-            explicitHydrogenIndices = casekit.nmr.utils.Utils.getExplicitHydrogenIndices(structure);
-            Collections.sort(explicitHydrogenIndices);
-            dataSet = Utils.atomContainerToDataSet(structure);
+            try {
+                AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(structure);
+                explicitHydrogenIndices = casekit.nmr.utils.Utils.getExplicitHydrogenIndices(structure);
+                Collections.sort(explicitHydrogenIndices);
+                dataSet = Utils.atomContainerToDataSet(structure);
 
-            for (final String nucleus : nuclei) {
-                spectraProperties1D = getSpectraProperties1D(structure, nucleus);
-                for (final String spectrumProperty1D : spectraProperties1D) {
-                    split = spectrumProperty1D.split("\\s");
-                    spectrumIndexInRecord = split[split.length
-                            - 1];
+                for (final String nucleus : nuclei) {
+                    spectraProperties1D = getSpectraProperties1D(structure, nucleus);
+                    for (final String spectrumProperty1D : spectraProperties1D) {
+                        split = spectrumProperty1D.split("\\s");
+                        spectrumIndexInRecord = split[split.length
+                                - 1];
 
-                    // skip molecules which do not contain any of requested spectrum information
-                    spectrum = NMRShiftDBSpectrumToSpectrum(structure.getProperty(spectrumProperty1D), nucleus);
-                    // if no spectrum could be built or the number of signals in spectrum is different than the atom number in molecule
-                    if ((spectrum
-                            == null)
-                            || casekit.nmr.utils.Utils.getDifferenceSpectrumSizeAndMolecularFormulaCount(spectrum,
-                                                                                                         Utils.getMolecularFormulaFromString(
-                                                                                                                 dataSet.getMeta()
-                                                                                                                        .get("mf")),
-                                                                                                         0)
-                            != 0) {
-                        continue;
-                    }
-                    if (structure.getProperty("Solvent")
-                            != null) {
-                        spectrum.addMetaInfo("solvent",
-                                             getSolvent(structure.getProperty("Solvent"), spectrumIndexInRecord));
-                    }
-                    if (structure.getProperty("Field Strength [MHz]")
-                            != null) {
-                        for (final String fieldStrength : structure.getProperty("Field Strength [MHz]")
-                                                                   .toString()
-                                                                   .split("\\s")) {
-                            if (fieldStrength.startsWith(spectrumIndexInRecord
-                                                                 + ":")) {
-                                try {
-                                    spectrum.addMetaInfo("spectrometerFrequency", fieldStrength.split(
-                                            spectrumIndexInRecord
-                                                    + ":")[1]);
-                                } catch (final NumberFormatException e) {
-                                    //                                    e.printStackTrace();
-                                }
-                                break;
-                            }
+                        // skip molecules which do not contain any of requested spectrum information
+                        spectrum = NMRShiftDBSpectrumToSpectrum(structure.getProperty(spectrumProperty1D), nucleus);
+                        // if no spectrum could be built or the number of signals in spectrum is different than the atom number in molecule
+                        if ((spectrum
+                                == null)
+                                || casekit.nmr.utils.Utils.getDifferenceSpectrumSizeAndMolecularFormulaCount(spectrum,
+                                                                                                             Utils.getMolecularFormulaFromString(
+                                                                                                                     dataSet.getMeta()
+                                                                                                                            .get("mf")),
+                                                                                                             0)
+                                != 0) {
+                            continue;
                         }
-                    }
-
-                    assignment = NMRShiftDBSpectrumToAssignment(structure.getProperty(spectrumProperty1D), nucleus);
-                    if (assignment
-                            != null
-                            && !explicitHydrogenIndices.isEmpty()) {
-                        int hCount;
-                        for (int i = 0; i
-                                < assignment.getSize(); i++) {
-                            for (int k = 0; k
-                                    < assignment.getAssignment(0, i).length; k++) {
-                                hCount = 0;
-                                for (int j = 0; j
-                                        < explicitHydrogenIndices.size(); j++) {
-                                    if (explicitHydrogenIndices.get(j)
-                                            >= assignment.getAssignment(0, i, k)) {
-                                        break;
+                        if (structure.getProperty("Solvent")
+                                != null) {
+                            spectrum.addMetaInfo("solvent",
+                                                 getSolvent(structure.getProperty("Solvent"), spectrumIndexInRecord));
+                        }
+                        if (structure.getProperty("Field Strength [MHz]")
+                                != null) {
+                            for (final String fieldStrength : structure.getProperty("Field Strength [MHz]")
+                                                                       .toString()
+                                                                       .split("\\s")) {
+                                if (fieldStrength.startsWith(spectrumIndexInRecord
+                                                                     + ":")) {
+                                    try {
+                                        spectrum.addMetaInfo("spectrometerFrequency", fieldStrength.split(
+                                                spectrumIndexInRecord
+                                                        + ":")[1]);
+                                    } catch (final NumberFormatException e) {
+                                        //                                    e.printStackTrace();
                                     }
-                                    hCount++;
+                                    break;
                                 }
-                                temp = assignment.getAssignment(0, i);
-                                temp[k] = assignment.getAssignment(0, i, k)
-                                        - hCount;
-                                assignment.setAssignment(0, i, temp);
                             }
                         }
-                    }
-                    dataSet.setSpectrum(new SpectrumCompact(spectrum));
-                    dataSet.setAssignment(assignment);
 
-                    dataSets.add(dataSet.buildClone());
+                        assignment = NMRShiftDBSpectrumToAssignment(structure.getProperty(spectrumProperty1D), nucleus);
+                        if (assignment
+                                != null
+                                && !explicitHydrogenIndices.isEmpty()) {
+                            int hCount;
+                            for (int i = 0; i
+                                    < assignment.getSize(); i++) {
+                                for (int k = 0; k
+                                        < assignment.getAssignment(0, i).length; k++) {
+                                    hCount = 0;
+                                    for (int j = 0; j
+                                            < explicitHydrogenIndices.size(); j++) {
+                                        if (explicitHydrogenIndices.get(j)
+                                                >= assignment.getAssignment(0, i, k)) {
+                                            break;
+                                        }
+                                        hCount++;
+                                    }
+                                    temp = assignment.getAssignment(0, i);
+                                    temp[k] = assignment.getAssignment(0, i, k)
+                                            - hCount;
+                                    assignment.setAssignment(0, i, temp);
+                                }
+                            }
+                        }
+                        dataSet.setSpectrum(new SpectrumCompact(spectrum));
+                        dataSet.setAssignment(assignment);
+
+                        dataSets.add(dataSet.buildClone());
+                    }
                 }
+            } catch (final CDKException e) {
+                System.out.println("--> could not create a proper dataset for ID: "
+                                           + structure.getProperty("nmrshiftdb2 ID"));
+                e.printStackTrace();
             }
         }
 

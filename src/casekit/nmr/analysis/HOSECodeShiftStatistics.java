@@ -1,6 +1,7 @@
 package casekit.nmr.analysis;
 
 import casekit.nmr.dbservice.COCONUT;
+import casekit.nmr.dbservice.LOTUS;
 import casekit.nmr.dbservice.NMRShiftDB;
 import casekit.nmr.fragments.model.ConnectionTree;
 import casekit.nmr.hose.HOSECodeBuilder;
@@ -209,6 +210,7 @@ public class HOSECodeShiftStatistics {
 
     public static Map<String, Map<String, Double[]>> buildHOSECodeShiftStatistics(final String[] pathsToNMRShiftDBs,
                                                                                   final String[] pathsToCOCONUTs,
+                                                                                  final String[] pathsToLOTUSs,
                                                                                   final String[] nuclei,
                                                                                   final Integer maxSphere,
                                                                                   final boolean use3D,
@@ -225,8 +227,13 @@ public class HOSECodeShiftStatistics {
                         COCONUT.getDataSetsWithShiftPredictionFromCOCONUT(pathsToCOCONUT, nuclei), maxSphere, use3D,
                         withExplicitH, hoseCodeShifts);
             }
+            for (final String pathsToLOTUS : pathsToLOTUSs) {
+                HOSECodeShiftStatistics.collectHOSECodeShifts(
+                        LOTUS.getDataSetsWithShiftPredictionFromLOTUS(pathsToLOTUS, nuclei), maxSphere, use3D,
+                        withExplicitH, hoseCodeShifts);
+            }
             return HOSECodeShiftStatistics.buildHOSECodeShiftStatistics(hoseCodeShifts);
-        } catch (final FileNotFoundException | CDKException e) {
+        } catch (final FileNotFoundException e) {
             e.printStackTrace();
         }
 
