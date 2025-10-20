@@ -22,7 +22,7 @@ public class DataSet {
     private Map<String, Object> attachment;
 
     public DataSet(final IAtomContainer structure, final Spectrum spectrum, final Assignment assignment,
-                   final Map<String, String> meta, final Map<String, Object> attachment) {
+            final Map<String, String> meta, final Map<String, Object> attachment) {
         this.structure = new StructureCompact(structure);
         this.spectrum = new SpectrumCompact(spectrum);
         this.assignment = assignment;
@@ -31,8 +31,7 @@ public class DataSet {
     }
 
     public void addMetaInfo(final String key, final String value) {
-        if (this.meta
-                == null) {
+        if (this.meta == null) {
             this.meta = new HashMap<>();
         }
         this.meta.put(key, value);
@@ -43,8 +42,7 @@ public class DataSet {
     }
 
     public void addAttachment(final String key, final Object object) {
-        if (this.attachment
-                == null) {
+        if (this.attachment == null) {
             this.attachment = new HashMap<>();
         }
         this.attachment.put(key, object);
@@ -55,12 +53,11 @@ public class DataSet {
     }
 
     public DataSet buildClone() {
-        final Map<String, String> metaTemp = this.meta
-                                                     == null
-                                             ? new HashMap<>()
-                                             : new HashMap<>(this.meta);
+        final Map<String, String> metaTemp = this.meta == null
+                ? new HashMap<>()
+                : new HashMap<>(this.meta);
         return new DataSet(this.structure.buildClone(), this.spectrum.buildClone(), this.assignment.buildClone(),
-                           new HashMap<>(metaTemp), new HashMap<>(this.attachment));
+                new HashMap<>(metaTemp), new HashMap<>(this.attachment));
     }
 
     @Override

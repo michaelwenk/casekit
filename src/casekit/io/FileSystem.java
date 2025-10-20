@@ -56,10 +56,10 @@ public class FileSystem {
         for (final String dir : directoriesToCheck) {
             try {
                 cleaned = Files.walk(Paths.get(dir))
-                               .map(Path::toFile)
-                               .filter(file -> file.getAbsolutePath()
-                                                   .contains(pattern))
-                               .allMatch(File::delete);
+                        .map(Path::toFile)
+                        .filter(file -> file.getAbsolutePath()
+                                .contains(pattern))
+                        .allMatch(File::delete);
 
             } catch (final IOException e) {
                 System.out.println("Not all files could be deleted!");
@@ -72,23 +72,20 @@ public class FileSystem {
 
     public static String getFileContent(final String pathToJsonFile) {
         final BufferedReader bufferedReader = FileSystem.readFile(pathToJsonFile);
-        return bufferedReader
-                       == null
-               ? null
-               : bufferedReader.lines()
-                               .reduce("", (content, line) -> content
-                                       + line);
+        return bufferedReader == null
+                ? null
+                : bufferedReader.lines()
+                        .reduce("", (content, line) -> content
+                                + line);
     }
 
     public static List<String> getSmilesListFromFile(final String pathToSmilesFile) {
         final List<String> smilesList = new ArrayList<>();
         try {
             final BufferedReader bufferedReader = FileSystem.readFile(pathToSmilesFile);
-            if (bufferedReader
-                    != null) {
+            if (bufferedReader != null) {
                 String line;
-                while ((line = bufferedReader.readLine())
-                        != null) {
+                while ((line = bufferedReader.readLine()) != null) {
                     smilesList.add(line);
                 }
                 bufferedReader.close();

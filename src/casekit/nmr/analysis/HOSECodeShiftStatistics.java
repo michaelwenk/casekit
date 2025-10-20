@@ -25,18 +25,19 @@ import java.util.*;
 public class HOSECodeShiftStatistics {
 
     private final static Gson GSON = new GsonBuilder().setLenient()
-                                                      .create();
+            .create();
     private final static ExtendedHOSECodeGenerator extendedHOSECodeGenerator = new ExtendedHOSECodeGenerator();
 
     public static Map<String, Map<String, List<Double>>> collectHOSECodeShifts(final List<DataSet> dataSetList,
-                                                                               final Integer maxSphere,
-                                                                               final boolean use3D,
-                                                                               final boolean withExplicitH) {
+            final Integer maxSphere,
+            final boolean use3D,
+            final boolean withExplicitH) {
         return collectHOSECodeShifts(dataSetList, maxSphere, use3D, withExplicitH, new HashMap<>());
     }
 
     /**
-     * This method expects datasets containing structures without explicit hydrogens.
+     * This method expects datasets containing structures without explicit
+     * hydrogens.
      *
      * @param dataSetList
      * @param maxSphere
@@ -45,10 +46,10 @@ public class HOSECodeShiftStatistics {
      * @return
      */
     public static Map<String, Map<String, List<Double>>> collectHOSECodeShifts(final List<DataSet> dataSetList,
-                                                                               final Integer maxSphere,
-                                                                               final boolean use3D,
-                                                                               final boolean withExplicitH,
-                                                                               final Map<String, Map<String, List<Double>>> hoseCodeShifts) {
+            final Integer maxSphere,
+            final boolean use3D,
+            final boolean withExplicitH,
+            final Map<String, Map<String, List<Double>>> hoseCodeShifts) {
         for (final DataSet dataSet : dataSetList) {
             insert(dataSet, maxSphere, use3D, withExplicitH, hoseCodeShifts);
         }
@@ -57,8 +58,8 @@ public class HOSECodeShiftStatistics {
     }
 
     public static boolean insert(final DataSet dataSet, final Integer maxSphere, final boolean use3D,
-                                 final boolean withExplicitH,
-                                 final Map<String, Map<String, List<Double>>> hoseCodeShifts) {
+            final boolean withExplicitH,
+            final Map<String, Map<String, List<Double>>> hoseCodeShifts) {
         final IAtomContainer structure;
         Signal signal;
         String hoseCode;
@@ -69,9 +70,9 @@ public class HOSECodeShiftStatistics {
         int maxSphereTemp;
         List<Integer> signalIndices;
         structure = dataSet.getStructure()
-                           .toAtomContainer();
+                .toAtomContainer();
         final Spectrum spectrum = dataSet.getSpectrum()
-                                         .toSpectrum();
+                .toSpectrum();
         if (Utils.containsExplicitHydrogens(structure)) {
             System.out.println("!!!Dataset skipped must not contain (previously set) explicit hydrogens!!!");
             return false;
@@ -82,14 +83,11 @@ public class HOSECodeShiftStatistics {
                 || withExplicitH) {
             try {
                 int nextAtomIndexExplicitH = structure.getAtomCount();
-                for (int i = 0; i
-                        < structure.getAtomCount(); i++) {
+                for (int i = 0; i < structure.getAtomCount(); i++) {
                     if (structure.getAtom(i)
-                                 .getImplicitHydrogenCount()
-                            != null) {
-                        for (int j = 0; j
-                                < structure.getAtom(i)
-                                           .getImplicitHydrogenCount(); j++) {
+                            .getImplicitHydrogenCount() != null) {
+                        for (int j = 0; j < structure.getAtom(i)
+                                .getImplicitHydrogenCount(); j++) {
                             atomIndexMap.put(nextAtomIndexExplicitH, i);
                             nextAtomIndexExplicitH++;
                         }
@@ -112,55 +110,49 @@ public class HOSECodeShiftStatistics {
             }
         }
         solvent = dataSet.getSpectrum()
-                         .getMeta()
-                          == null
-                  ? null
-                  : dataSet.getSpectrum()
-                           .getMeta()
-                           .get("solvent");
-        if (solvent
-                == null
+                .getMeta() == null
+                        ? null
+                        : dataSet.getSpectrum()
+                                .getMeta()
+                                .get("solvent");
+        if (solvent == null
                 || solvent.equals("")) {
             solvent = "Unknown";
         }
         atomTypeSpectrum = Utils.getAtomTypeFromNucleus(dataSet.getSpectrum()
-                                                               .getNuclei()[0]);
-        for (int i = 0; i
-                < structure.getAtomCount(); i++) {
+                .getNuclei()[0]);
+        for (int i = 0; i < structure.getAtomCount(); i++) {
             signalIndices = null;
             if (structure.getAtom(i)
-                         .getSymbol()
-                         .equals(atomTypeSpectrum)) {
+                    .getSymbol()
+                    .equals(atomTypeSpectrum)) {
                 if (atomTypeSpectrum.equals("H")) {
                     // could be multiple signals
                     signalIndices = dataSet.getAssignment()
-                                           .getIndices(0, atomIndexMap.get(i));
+                            .getIndices(0, atomIndexMap.get(i));
                 } else {
                     // should be one only
                     signalIndices = dataSet.getAssignment()
-                                           .getIndices(0, i);
+                            .getIndices(0, i);
                 }
             }
-            if (signalIndices
-                    != null) {
+            if (signalIndices != null) {
                 for (final Integer signalIndex : signalIndices) {
                     signal = spectrum.getSignal(signalIndex);
                     try {
-                        if (maxSphere
-                                == null) {
+                        if (maxSphere == null) {
                             connectionTree = HOSECodeBuilder.buildConnectionTree(structure, i, null);
                             maxSphereTemp = connectionTree.getMaxSphere(true);
                         } else {
                             maxSphereTemp = maxSphere;
                         }
-                        for (int sphere = 1; sphere
-                                <= maxSphereTemp; sphere++) {
+                        for (int sphere = 1; sphere <= maxSphereTemp; sphere++) {
                             if (use3D) {
                                 try {
                                     hoseCode = extendedHOSECodeGenerator.getHOSECode(structure, structure.getAtom(i),
-                                                                                     sphere);
+                                            sphere);
                                 } catch (final Exception e) {
-                                    //                                    e.printStackTrace();
+                                    // e.printStackTrace();
                                     continue;
                                 }
                             } else {
@@ -168,10 +160,10 @@ public class HOSECodeShiftStatistics {
                             }
                             hoseCodeShifts.putIfAbsent(hoseCode, new HashMap<>());
                             hoseCodeShifts.get(hoseCode)
-                                          .putIfAbsent(solvent, new ArrayList<>());
+                                    .putIfAbsent(solvent, new ArrayList<>());
                             hoseCodeShifts.get(hoseCode)
-                                          .get(solvent)
-                                          .add(signal.getShift(0));
+                                    .get(solvent)
+                                    .add(signal.getShift(0));
                         }
                     } catch (final CDKException e) {
                         e.printStackTrace();
@@ -191,14 +183,14 @@ public class HOSECodeShiftStatistics {
         for (final Map.Entry<String, Map<String, List<Double>>> hoseCodes : hoseCodeShifts.entrySet()) {
             hoseCodeShiftStatistics.put(hoseCodes.getKey(), new HashMap<>());
             for (final Map.Entry<String, List<Double>> solvents : hoseCodes.getValue()
-                                                                           .entrySet()) {
+                    .entrySet()) {
                 values = new ArrayList<>(solvents.getValue());
                 values = Statistics.removeOutliers(values, 1.5);
                 hoseCodeShiftStatistics.get(hoseCodes.getKey())
-                                       .put(solvents.getKey(),
-                                            new Double[]{(double) values.size(), Collections.min(values),
-                                                         Statistics.getMean(values), Statistics.getMedian(values),
-                                                         Collections.max(values)});
+                        .put(solvents.getKey(),
+                                new Double[] { (double) values.size(), Collections.min(values),
+                                        Statistics.getMean(values), Statistics.getMedian(values),
+                                        Collections.max(values) });
             }
         }
 
@@ -206,11 +198,11 @@ public class HOSECodeShiftStatistics {
     }
 
     public static Map<String, Map<String, Double[]>> buildHOSECodeShiftStatistics(final String[] pathsToNMRShiftDBs,
-                                                                                  final String[] pathsToCOCONUTs,
-                                                                                  final String[] nuclei,
-                                                                                  final Integer maxSphere,
-                                                                                  final boolean use3D,
-                                                                                  final boolean withExplicitH) {
+            final String[] pathsToCOCONUTs,
+            final String[] nuclei,
+            final Integer maxSphere,
+            final boolean use3D,
+            final boolean withExplicitH) {
         try {
             final Map<String, Map<String, List<Double>>> hoseCodeShifts = new HashMap<>();
             for (final String pathsToNMRShiftDB : pathsToNMRShiftDBs) {
@@ -232,15 +224,15 @@ public class HOSECodeShiftStatistics {
     }
 
     public static Map<String, Map<String, Double[]>> buildHOSECodeShiftStatistics(final List<DataSet> dataSetList,
-                                                                                  final Integer maxSphere,
-                                                                                  final boolean use3D,
-                                                                                  final boolean withExplicitH) {
+            final Integer maxSphere,
+            final boolean use3D,
+            final boolean withExplicitH) {
         return HOSECodeShiftStatistics.buildHOSECodeShiftStatistics(
                 collectHOSECodeShifts(dataSetList, maxSphere, use3D, withExplicitH));
     }
 
     public static boolean writeHOSECodeShiftStatistics(final Map<String, Map<String, Double[]>> hoseCodeShifts,
-                                                       final String pathToJsonFile) {
+            final String pathToJsonFile) {
         try {
             final BufferedWriter bw = new BufferedWriter(new FileWriter(pathToJsonFile));
             bw.append("{");
@@ -257,8 +249,7 @@ public class HOSECodeShiftStatistics {
                 json = new Document(String.valueOf(counter), subDocument).toJson();
                 bw.append(json, 1, json.length()
                         - 1);
-                if (counter
-                        < hoseCodeShifts.size()
+                if (counter < hoseCodeShifts.size()
                         - 1) {
                     bw.append(",");
                 }
@@ -286,32 +277,32 @@ public class HOSECodeShiftStatistics {
         final Map<String, Map<String, Double[]>> hoseCodeShiftStatistics = new HashMap<>();
         // add all task to do
         br.lines()
-          .forEach(line -> {
-              if ((line.trim()
-                       .length()
-                      > 1)
-                      || (!line.trim()
-                               .startsWith("{")
-                      && !line.trim()
-                              .endsWith("}"))) {
-                  final StringBuilder hoseCodeShiftsStatisticInJSON = new StringBuilder();
-                  if (line.endsWith(",")) {
-                      hoseCodeShiftsStatisticInJSON.append(line, 0, line.length()
-                              - 1);
-                  } else {
-                      hoseCodeShiftsStatisticInJSON.append(line);
-                  }
-                  final JsonObject jsonObject = JsonParser.parseString(hoseCodeShiftsStatisticInJSON.substring(
-                                                                  hoseCodeShiftsStatisticInJSON.toString()
-                                                                                               .indexOf("{")))
-                                                          .getAsJsonObject();
-                  hoseCodeShiftStatistics.put(jsonObject.get("HOSECode")
-                                                        .getAsString(), GSON.fromJson(jsonObject.get("values")
-                                                                                                .getAsString(),
-                                                                                      new TypeToken<Map<String, Double[]>>() {
-                                                                                      }.getType()));
-              }
-          });
+                .forEach(line -> {
+                    if ((line.trim()
+                            .length() > 1)
+                            || (!line.trim()
+                                    .startsWith("{")
+                                    && !line.trim()
+                                            .endsWith("}"))) {
+                        final StringBuilder hoseCodeShiftsStatisticInJSON = new StringBuilder();
+                        if (line.endsWith(",")) {
+                            hoseCodeShiftsStatisticInJSON.append(line, 0, line.length()
+                                    - 1);
+                        } else {
+                            hoseCodeShiftsStatisticInJSON.append(line);
+                        }
+                        final JsonObject jsonObject = JsonParser.parseString(hoseCodeShiftsStatisticInJSON.substring(
+                                hoseCodeShiftsStatisticInJSON.toString()
+                                        .indexOf("{")))
+                                .getAsJsonObject();
+                        hoseCodeShiftStatistics.put(jsonObject.get("HOSECode")
+                                .getAsString(),
+                                GSON.fromJson(jsonObject.get("values")
+                                        .getAsString(),
+                                        new TypeToken<Map<String, Double[]>>() {
+                                        }.getType()));
+                    }
+                });
 
         return hoseCodeShiftStatistics;
     }
