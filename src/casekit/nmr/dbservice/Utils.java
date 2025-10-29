@@ -14,29 +14,28 @@ public class Utils {
 
     public static int splitSDFile(final String pathToSDFile, final int maxMolPerFile) throws IOException, CDKException {
         final IteratingSDFReader iterator = new IteratingSDFReader(new FileReader(pathToSDFile),
-                                                                   SilentChemObjectBuilder.getInstance());
+                SilentChemObjectBuilder.getInstance());
         final String fileEnding = pathToSDFile.split("\\.")[1];
         BufferedWriter bufferedWriter;
         SDFWriter sdfWriter;
         int counter = 0;
         int part = 1;
         bufferedWriter = new BufferedWriter(new FileWriter(pathToSDFile.split("\\.")[0]
-                                                                   + "_"
-                                                                   + part
-                                                                   + "."
-                                                                   + fileEnding));
+                + "_"
+                + part
+                + "."
+                + fileEnding));
         sdfWriter = new SDFWriter(bufferedWriter);
         while (iterator.hasNext()) {
-            if (counter
-                    >= maxMolPerFile) {
+            if (counter >= maxMolPerFile) {
                 sdfWriter.close();
 
                 part++;
                 bufferedWriter = new BufferedWriter(new FileWriter(pathToSDFile.split("\\.")[0]
-                                                                           + "_"
-                                                                           + part
-                                                                           + "."
-                                                                           + fileEnding));
+                        + "_"
+                        + part
+                        + "."
+                        + fileEnding));
                 sdfWriter = new SDFWriter(bufferedWriter);
                 sdfWriter.write(iterator.next());
                 counter = 1;
@@ -46,6 +45,7 @@ public class Utils {
             counter++;
         }
         sdfWriter.close();
+        iterator.close();
 
         return part
                 - 1;

@@ -13,22 +13,24 @@ import java.util.List;
 
 public class Parser {
 
-    public static List<DataSet> parseSDFile(final String pathToFile) throws CDKException, FileNotFoundException {
+    public static List<DataSet> parseSDFile(final String pathToFile)
+            throws CDKException, IOException {
         return parseSDFile(new FileReader(pathToFile));
     }
 
-    public static List<DataSet> parseSDFileContent(final String fileContent) throws CDKException {
+    public static List<DataSet> parseSDFileContent(final String fileContent) throws CDKException, IOException {
         final InputStream inputStream = new ByteArrayInputStream(fileContent.getBytes(StandardCharsets.UTF_8));
         return parseSDFile(new InputStreamReader(inputStream));
     }
 
-    public static List<DataSet> parseSDFile(final Reader fileReader) throws CDKException {
+    public static List<DataSet> parseSDFile(final Reader fileReader) throws CDKException, IOException {
         final List<DataSet> dataSetList = new ArrayList<>();
-        final IteratingSDFReader iterator = new IteratingSDFReader(fileReader, SilentChemObjectBuilder.getInstance());
 
+        final IteratingSDFReader iterator = new IteratingSDFReader(fileReader, SilentChemObjectBuilder.getInstance());
         while (iterator.hasNext()) {
             dataSetList.add(Utils.atomContainerToDataSet(iterator.next()));
         }
+        iterator.close();
 
         return dataSetList;
     }
@@ -47,13 +49,13 @@ public class Parser {
         final BufferedReader bufferedReader = new BufferedReader(fileReader);
         final SmilesParser smilesParser = new SmilesParser(SilentChemObjectBuilder.getInstance());
         bufferedReader.lines()
-                      .forEach(smiles -> {
-                          try {
-                              dataSetList.add(Utils.atomContainerToDataSet(smilesParser.parseSmiles(smiles)));
-                          } catch (final CDKException e) {
-                              e.printStackTrace();
-                          }
-                      });
+                .forEach(smiles -> {
+                    try {
+                        dataSetList.add(Utils.atomContainerToDataSet(smilesParser.parseSmiles(smiles)));
+                    } catch (final CDKException e) {
+                        e.printStackTrace();
+                    }
+                });
 
         return dataSetList;
     }
@@ -71,7 +73,7 @@ public class Parser {
         final List<String> smilesList = new ArrayList<>();
         final BufferedReader bufferedReader = new BufferedReader(fileReader);
         bufferedReader.lines()
-                      .forEach(smilesList::add);
+                .forEach(smilesList::add);
 
         return smilesList;
     }

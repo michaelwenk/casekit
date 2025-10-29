@@ -6,6 +6,7 @@ import casekit.nmr.model.Spectrum;
 import casekit.nmr.model.*;
 import casekit.nmr.model.nmrium.*;
 import com.google.gson.Gson;
+
 import org.openscience.cdk.aromaticity.Aromaticity;
 import org.openscience.cdk.aromaticity.ElectronDonation;
 import org.openscience.cdk.aromaticity.Kekulization;
@@ -58,12 +59,11 @@ public class Utils {
 
     public static String getMultiplicityFromProtonsCount(final Correlation correlation) {
         if (correlation.getAtomType()
-                       .equals("C")
+                .equals("C")
                 && correlation.getProtonsCount()
-                              .size()
-                == 1) {
+                        .size() == 1) {
             return getMultiplicityFromProtonsCount(correlation.getProtonsCount()
-                                                              .get(0));
+                    .get(0));
         }
         return null;
     }
@@ -87,7 +87,8 @@ public class Utils {
     }
 
     public static String getSmilesFromAtomContainer(final IAtomContainer ac) throws CDKException {
-        // SmiFlavor.Unique instead of SmiFlavor.Absolute because current errors with InChI generator
+        // SmiFlavor.Unique instead of SmiFlavor.Absolute because current errors with
+        // InChI generator
         final SmilesGenerator smilesGenerator = new SmilesGenerator(SmiFlavor.Unique);
 
         return smilesGenerator.create(ac);
@@ -98,8 +99,7 @@ public class Utils {
         final Map<String, Integer> mfAlphabeticMap = new TreeMap<>(getMolecularFormulaElementCounts(mf));
         for (final Map.Entry<String, Integer> entry : mfAlphabeticMap.entrySet()) {
             mfAlphabeticStringBuilder.append(entry.getKey());
-            if (entry.getValue()
-                    > 1) {
+            if (entry.getValue() > 1) {
                 mfAlphabeticStringBuilder.append(entry.getValue());
             }
         }
@@ -111,20 +111,20 @@ public class Utils {
         final LinkedHashMap<String, Integer> counts = new LinkedHashMap<>();
         final List<String> elements = new ArrayList<>();
         Matcher matcher = Pattern.compile("([A-Z][a-z]{0,1})")
-                                 .matcher(mf);
+                .matcher(mf);
         while (matcher.find()) {
             elements.add(matcher.group(1));
         }
         int count;
         for (final String element : elements) {
             matcher = Pattern.compile("("
-                                              + element
-                                              + "\\d+)")
-                             .matcher(mf);
+                    + element
+                    + "\\d+)")
+                    .matcher(mf);
             count = 1;
             if (matcher.find()) {
                 count = Integer.parseInt(matcher.group(1)
-                                                .split(element)[1]);
+                        .split(element)[1]);
             }
             counts.put(element, count);
         }
@@ -141,40 +141,33 @@ public class Utils {
     }
 
     public static boolean compareWithMolecularFormulaLessOrEqual(final IAtomContainer structure, final String mf) {
-        if (mf
-                == null
+        if (mf == null
                 || mf.trim()
-                     .isEmpty()) {
+                        .isEmpty()) {
             return false;
         }
         for (final String atomType : getAtomTypesInAtomContainer(structure)) {
             if (!atomType.equals("R")
-                    && getAtomTypeCount(structure, atomType)
-                    > getAtomTypeCount(mf, atomType)) {
+                    && getAtomTypeCount(structure, atomType) > getAtomTypeCount(mf, atomType)) {
                 return false;
             }
         }
-        return AtomContainerManipulator.getImplicitHydrogenCount(structure)
-                <= getAtomTypeCount(mf, "H");
-
+        return AtomContainerManipulator.getImplicitHydrogenCount(structure) <= getAtomTypeCount(mf, "H");
 
     }
 
     public static boolean compareWithMolecularFormulaEqual(final IAtomContainer structure, final String mf) {
-        if (mf
-                == null
+        if (mf == null
                 || mf.trim()
-                     .isEmpty()) {
+                        .isEmpty()) {
             return false;
         }
         for (final String atomType : getAtomTypesInAtomContainer(structure)) {
-            if (getAtomTypeCount(structure, atomType)
-                    != getAtomTypeCount(mf, atomType)) {
+            if (getAtomTypeCount(structure, atomType) != getAtomTypeCount(mf, atomType)) {
                 return false;
             }
         }
-        return AtomContainerManipulator.getImplicitHydrogenCount(structure)
-                == Utils.getAtomTypeCount(mf, "H");
+        return AtomContainerManipulator.getImplicitHydrogenCount(structure) == Utils.getAtomTypeCount(mf, "H");
     }
 
     /**
@@ -213,11 +206,10 @@ public class Utils {
     public static List<Integer> getAtomTypeIndicesByElement(final IAtomContainer ac, final String atomType) {
 
         final ArrayList<Integer> indices = new ArrayList<>();
-        for (int i = 0; i
-                < ac.getAtomCount(); i++) {
+        for (int i = 0; i < ac.getAtomCount(); i++) {
             if (ac.getAtom(i)
-                  .getSymbol()
-                  .equals(atomType)) {
+                    .getSymbol()
+                    .equals(atomType)) {
                 indices.add(i);
             }
         }
@@ -234,20 +226,19 @@ public class Utils {
     }
 
     public static int getDifferenceSpectrumSizeAndMolecularFormulaCount(final Spectrum spectrum,
-                                                                        final IMolecularFormula molFormula,
-                                                                        final int dim) throws CDKException {
+            final IMolecularFormula molFormula,
+            final int dim) throws CDKException {
         if (!spectrum.containsDim(dim)) {
             throw new CDKException(Thread.currentThread()
-                                         .getStackTrace()[2].getClassName()
-                                           + "."
-                                           + Thread.currentThread()
-                                                   .getStackTrace()[2].getMethodName()
-                                           + ": invalid dimension in spectrum given");
+                    .getStackTrace()[2].getClassName()
+                    + "."
+                    + Thread.currentThread()
+                            .getStackTrace()[2].getMethodName()
+                    + ": invalid dimension in spectrum given");
         }
         final String atomType = getAtomTypeFromSpectrum(spectrum, dim);
         int atomsInMolFormula = 0;
-        if (molFormula
-                != null) {
+        if (molFormula != null) {
             atomsInMolFormula = MolecularFormulaManipulator.getElementCount(molFormula, atomType);
         }
         return atomsInMolFormula
@@ -255,7 +246,8 @@ public class Utils {
     }
 
     /**
-     * Returns the casekit.nmr isotope identifier for a given element, e.g. C -> 13C.
+     * Returns the casekit.nmr isotope identifier for a given element, e.g. C ->
+     * 13C.
      * Elements defined so far: C, H, N, P, F, D, O, S, Si, B, Pt.
      *
      * @param element element's symbol (e.g. "C")
@@ -302,25 +294,28 @@ public class Utils {
         float bondOrderSum = getBondOrderSum(ac, atomIndex, true);
         bondOrderSum += getBondOrderAsNumeric(bondToAdd);
 
-        //        System.out.print(atomIndex + " --> " + HOSECodeUtilities.getBondOrderSum(ac, atomIndex, true) + " + " + HOSECodeUtilities.getBondOrderAsNumeric(bondToAdd));
+        // System.out.print(atomIndex + " --> " + HOSECodeUtilities.getBondOrderSum(ac,
+        // atomIndex, true) + " + " +
+        // HOSECodeUtilities.getBondOrderAsNumeric(bondToAdd));
         final IAtom atom = ac.getAtom(atomIndex);
         // @TODO include different valencies: N3, N5, S2, S4, S6 etc.
-        // -1 for cases with heterocyclic aromatics, like the N in the small aromatic ring in coffein if we want to add the bond to the CH3 group
+        // -1 for cases with heterocyclic aromatics, like the N in the small aromatic
+        // ring in coffein if we want to add the bond to the CH3 group
         if (atom.isAromatic()
                 && (atom.getSymbol()
                         .equals("N")
-                || atom.getSymbol()
-                       .equals("S")
-                || atom.getSymbol()
-                       .equals("P"))) {
-            //            System.out.print("[ -1 ]");
+                        || atom.getSymbol()
+                                .equals("S")
+                        || atom.getSymbol()
+                                .equals("P"))) {
+            // System.out.print("[ -1 ]");
             bondOrderSum -= 1;
         }
-        //        System.out.print(" = " + bondOrderSum + " <= " + atom.getValency() + " ? -> " + (bondOrderSum <= atom.getValency()) + "\n");
+        // System.out.print(" = " + bondOrderSum + " <= " + atom.getValency() + " ? -> "
+        // + (bondOrderSum <= atom.getValency()) + "\n");
 
         // @TODO include charges
-        return bondOrderSum
-                <= atom.getValency();
+        return bondOrderSum <= atom.getValency();
     }
 
     public static boolean isSaturated(final IAtomContainer ac, final int atomIndex) {
@@ -329,15 +324,12 @@ public class Utils {
                 .equals("R")) {
             return false;
         }
-        return atom.getValency()
-                != null
-                && getBondOrderSum(ac, atomIndex, true).intValue()
-                >= atom.getValency();
+        return atom.getValency() != null
+                && getBondOrderSum(ac, atomIndex, true).intValue() >= atom.getValency();
     }
 
     public static boolean isSaturated(final IAtomContainer ac) {
-        for (int i = 0; i
-                < ac.getAtomCount(); i++) {
+        for (int i = 0; i < ac.getAtomCount(); i++) {
             if (!isSaturated(ac, i)) {
                 return false;
             }
@@ -348,8 +340,7 @@ public class Utils {
 
     public static List<Integer> getUnsaturatedAtomIndices(final IAtomContainer ac) {
         final List<Integer> unsaturatedAtomIndices = new ArrayList<>();
-        for (int i = 0; i
-                < ac.getAtomCount(); i++) {
+        for (int i = 0; i < ac.getAtomCount(); i++) {
             // set the indices of unsaturated atoms in substructure
             if (!isSaturated(ac, i)) {
                 unsaturatedAtomIndices.add(i);
@@ -386,8 +377,7 @@ public class Utils {
      * @return
      */
     public static boolean containsExplicitHydrogens(final IAtomContainer ac) {
-        return getExplicitHydrogenCount(ac)
-                > 0;
+        return getExplicitHydrogenCount(ac) > 0;
     }
 
     /**
@@ -404,7 +394,8 @@ public class Utils {
      * @see #containsExplicitHydrogens(IAtomContainer)
      */
     public static Map<IAtom, Integer> convertExplicitToImplicitHydrogens(final IAtomContainer ac) {
-        // create a list of atom indices which one can use for index comparison (before vs. after) after removing the explicit hydrogens
+        // create a list of atom indices which one can use for index comparison (before
+        // vs. after) after removing the explicit hydrogens
         final Map<IAtom, Integer> atomIndices = new HashMap<>();
         final List<IAtom> toRemoveList = new ArrayList<>();
         IAtom atomB;
@@ -413,15 +404,14 @@ public class Utils {
             // if yes then store (increase) the number of implicit hydrogens
             // for its bonded heavy atom
             if (atomA.getSymbol()
-                     .equals("H")) {
+                    .equals("H")) {
                 atomB = ac.getConnectedAtomsList(atomA)
-                          .get(0);
-                if (atomB.getImplicitHydrogenCount()
-                        == null) {
+                        .get(0);
+                if (atomB.getImplicitHydrogenCount() == null) {
                     atomB.setImplicitHydrogenCount(0);
                 }
                 atomB.setImplicitHydrogenCount(atomB.getImplicitHydrogenCount()
-                                                       + 1);
+                        + 1);
                 toRemoveList.add(atomA);
             } else {
                 // store all non-hydrogen atoms and their indices
@@ -444,11 +434,10 @@ public class Utils {
      */
     public static List<Integer> getExplicitHydrogenIndices(final IAtomContainer ac) {
         final List<Integer> explicitHydrogenIndicesList = new ArrayList<>();
-        for (int i = 0; i
-                < ac.getAtomCount(); i++) {
+        for (int i = 0; i < ac.getAtomCount(); i++) {
             if (ac.getAtom(i)
-                  .getSymbol()
-                  .equals("H")) {
+                    .getSymbol()
+                    .equals("H")) {
                 explicitHydrogenIndicesList.add(i);
             }
         }
@@ -467,9 +456,9 @@ public class Utils {
 
     public static void setAromaticity(final IAtomContainer ac) throws CDKException {
         AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(ac);
-        final ElectronDonation model = ElectronDonation.cdkAllowingExocyclic();
-        final CycleFinder cycles = Cycles.all(ac.getAtomCount());
-        final Aromaticity aromaticity = new Aromaticity(model, cycles);
+        final ElectronDonation model = Aromaticity.Model.CDK_2x;
+        final CycleFinder cycleFinder = Cycles.all();
+        final Aromaticity aromaticity = new Aromaticity(model, cycleFinder);
         aromaticity.apply(ac);
     }
 
@@ -484,7 +473,7 @@ public class Utils {
     }
 
     public static void setAromaticityAndKekulize(final IAtomContainer ac,
-                                                 final Aromaticity aromaticity) throws CDKException {
+            final Aromaticity aromaticity) throws CDKException {
         setAromaticity(ac, aromaticity);
         Kekulization.kekulize(ac);
     }
@@ -502,7 +491,7 @@ public class Utils {
         final ArrayList<IAtom> toRemoveList = new ArrayList<>();
         for (final IAtom atomA : ac.atoms()) {
             if (atomA.getSymbol()
-                     .equals(atomType)) {// detect whether the current atom A is a from the given atom type
+                    .equals(atomType)) {// detect whether the current atom A is a from the given atom type
                 toRemoveList.add(atomA);
             }
         }
@@ -514,10 +503,8 @@ public class Utils {
     }
 
     public static boolean checkIndexInAtomContainer(final IAtomContainer ac, final int atomIndex) {
-        return ((atomIndex
-                >= 0)
-                && atomIndex
-                < ac.getAtomCount());
+        return ((atomIndex >= 0)
+                && atomIndex < ac.getAtomCount());
     }
 
     /**
@@ -529,8 +516,7 @@ public class Utils {
      */
     public static IBond.Order getBondOrder(final int orderAsNumeric) {
         for (final IBond.Order order : IBond.Order.values()) {
-            if (order.numeric()
-                    == orderAsNumeric) {
+            if (order.numeric() == orderAsNumeric) {
                 return order;
             }
         }
@@ -539,8 +525,7 @@ public class Utils {
     }
 
     public static Float getBondOrderAsNumeric(final IBond bond) {
-        if (bond
-                == null) {
+        if (bond == null) {
             return null;
         }
         final float bondOrderAsNumeric;
@@ -548,14 +533,14 @@ public class Utils {
             bondOrderAsNumeric = (float) 1.5;
         } else {
             bondOrderAsNumeric = bond.getOrder()
-                                     .numeric();
+                    .numeric();
         }
 
         return bondOrderAsNumeric;
     }
 
     public static Float getBondOrderSum(final IAtomContainer ac, final int atomIndex,
-                                        final boolean includeImplicitHydrogenCount) {
+            final boolean includeImplicitHydrogenCount) {
         if (!checkIndexInAtomContainer(ac, atomIndex)) {
             return null;
         }
@@ -565,8 +550,7 @@ public class Utils {
             bondsOrderSum += getBondOrderAsNumeric(bond);
         }
         if (includeImplicitHydrogenCount
-                && (atom.getImplicitHydrogenCount()
-                != null)) {
+                && (atom.getImplicitHydrogenCount() != null)) {
             bondsOrderSum += atom.getImplicitHydrogenCount();
         }
 
@@ -599,7 +583,7 @@ public class Utils {
      * @throws CDKException
      */
     public static DataSet atomContainerToDataSet(final IAtomContainer structure,
-                                                 final boolean configure) throws CDKException {
+            final boolean configure) throws CDKException {
         if (configure) {
             final CDKHydrogenAdder hydrogenAdder = CDKHydrogenAdder.getInstance(SilentChemObjectBuilder.getInstance());
             AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(structure);
@@ -611,21 +595,18 @@ public class Utils {
             setAromaticityAndKekulize(structure);
         }
         final Map<String, String> meta = new HashMap<>();
-        //        meta.put("title", structure.getTitle());
-        final String source = structure.getProperty("nmrshiftdb2 ID", String.class)
-                                      != null
-                              ? "nmrshiftdb"
-                              : structure.getProperty("SMILES_ID", String.class)
-                                        != null
-                                ? "coconut"
-                                : null;
-        if (source
-                != null) {
+        // meta.put("title", structure.getTitle());
+        final String source = structure.getProperty("nmrshiftdb2 ID", String.class) != null
+                ? "nmrshiftdb"
+                : structure.getProperty("SMILES_ID", String.class) != null
+                        ? "coconut"
+                        : null;
+        if (source != null) {
             meta.put("source", source);
             meta.put("id", source.equals("nmrshiftdb")
-                           ? structure.getProperty("nmrshiftdb2 ID", String.class)
-                           : structure.getProperty("SMILES_ID", String.class)
-                                      .split("\\.")[0]);
+                    ? structure.getProperty("nmrshiftdb2 ID", String.class)
+                    : structure.getProperty("SMILES_ID", String.class)
+                            .split("\\.")[0]);
         }
         final String mf = molecularFormularToString(
                 casekit.nmr.utils.Utils.getMolecularFormulaFromAtomContainer(structure));
@@ -650,8 +631,7 @@ public class Utils {
         final Map<String, Integer> mfAlphabeticMap = new TreeMap<>(Utils.getMolecularFormulaElementCounts(mf));
         for (final Map.Entry<String, Integer> entry : mfAlphabeticMap.entrySet()) {
             mfAlphabetic.append(entry.getKey());
-            if (entry.getValue()
-                    > 1) {
+            if (entry.getValue() > 1) {
                 mfAlphabetic.append(entry.getValue());
             }
         }
@@ -664,9 +644,9 @@ public class Utils {
             return null;
         }
         final List<Link> nonPseudoLinks = correlation.getLink()
-                                                     .stream()
-                                                     .filter(linkTemp -> !linkTemp.isPseudo())
-                                                     .collect(Collectors.toList());
+                .stream()
+                .filter(linkTemp -> !linkTemp.isPseudo())
+                .collect(Collectors.toList());
         if (nonPseudoLinks.isEmpty()) {
             return null;
         }
@@ -674,23 +654,23 @@ public class Utils {
         final Map<String, Object> signalMap = (Map<String, Object>) link.getSignal();
         final String multiplicity = Utils.getMultiplicityFromProtonsCount(correlation);
         final casekit.nmr.model.nmrium.Signal signal = new casekit.nmr.model.nmrium.Signal((String) signalMap.get("id"),
-                                                                                           (String) signalMap.get(
-                                                                                                   "kind"),
-                                                                                           multiplicity,
-                                                                                           signalMap.containsKey("sign")
-                                                                                           ? (int) Double.parseDouble(
-                                                                                                   String.valueOf(
-                                                                                                           signalMap.get(
-                                                                                                                   "sign")))
-                                                                                           : null);
+                (String) signalMap.get(
+                        "kind"),
+                multiplicity,
+                signalMap.containsKey("sign")
+                        ? (int) Double.parseDouble(
+                                String.valueOf(
+                                        signalMap.get(
+                                                "sign")))
+                        : null);
         // 1D signal
         if (signalMap.containsKey("delta")) {
             final Signal1D signal1D = new Signal1D(signal);
             signal1D.setDelta((double) signalMap.get("delta"));
 
-            return new Signal(new String[]{Constants.nucleiMap.get(correlation.getAtomType())},
-                              new Double[]{signal1D.getDelta()}, signal1D.getMultiplicity(), signal1D.getKind(), null,
-                              correlation.getEquivalence(), signal1D.getSign(), null, signal1D.getId());
+            return new Signal(new String[] { Constants.nucleiMap.get(correlation.getAtomType()) },
+                    new Double[] { signal1D.getDelta() }, signal1D.getMultiplicity(), signal1D.getKind(), null,
+                    correlation.getEquivalence(), signal1D.getSign(), null, signal1D.getId());
         } else if (signalMap.containsKey("x")) {
             // 2D signal
             final Signal2D signal2D = new Signal2D(signal);
@@ -702,15 +682,16 @@ public class Utils {
                 signal2D.setJ(new J(new PathLength((int) pathLengthMap.get("from"), (int) pathLengthMap.get("to"))));
             }
             final double shift = link.getAxis()
-                                     .equals("x")
-                                 ? (double) signal2D.getX()
-                                                    .get("delta")
-                                 : (double) signal2D.getY()
-                                                    .get("delta");
+                    .equals("x")
+                            ? (double) signal2D.getX()
+                                    .get("delta")
+                            : (double) signal2D.getY()
+                                    .get("delta");
 
-            return new Signal(new String[]{Constants.nucleiMap.get(correlation.getAtomType())}, new Double[]{shift},
-                              signal2D.getMultiplicity(), signal2D.getKind(), null, correlation.getEquivalence(),
-                              signal2D.getSign(), signal2D.getJ(), signal2D.getId());
+            return new Signal(new String[] { Constants.nucleiMap.get(correlation.getAtomType()) },
+                    new Double[] { shift },
+                    signal2D.getMultiplicity(), signal2D.getKind(), null, correlation.getEquivalence(),
+                    signal2D.getSign(), signal2D.getJ(), signal2D.getId());
         }
 
         return null;
@@ -719,19 +700,18 @@ public class Utils {
     public static Spectrum correlationListToSpectrum1D(final List<Correlation> correlationList, final String nucleus) {
         final String atomType = Utils.getAtomTypeFromNucleus(nucleus);
         final List<Correlation> correlationListAtomType = correlationList.stream()
-                                                                         .filter(correlation -> correlation.getAtomType()
-                                                                                                           .equals(atomType)
-                                                                                 && !correlation.isPseudo())
-                                                                         .collect(Collectors.toList());
+                .filter(correlation -> correlation.getAtomType()
+                        .equals(atomType)
+                        && !correlation.isPseudo())
+                .collect(Collectors.toList());
         final Spectrum spectrum = new Spectrum();
-        spectrum.setNuclei(new String[]{nucleus});
+        spectrum.setNuclei(new String[] { nucleus });
         spectrum.setSignals(new ArrayList<>());
 
         Signal signal;
         for (final Correlation correlation : correlationListAtomType) {
             signal = extractFirstSignalFromCorrelation(correlation);
-            if (signal
-                    != null) {
+            if (signal != null) {
                 signal.setId(correlation.getId());
                 spectrum.addSignalWithoutEquivalenceSearch(signal);
             }
@@ -748,8 +728,7 @@ public class Utils {
 
     public static void placeExplicitHydrogens(
             final IAtomContainer structure) throws CDKException, IOException, ClassNotFoundException {
-        if (structure.getBondCount()
-                == 0) {
+        if (structure.getBondCount() == 0) {
             return;
         }
         // store bond stereo information
@@ -757,7 +736,7 @@ public class Utils {
         int k = 0;
         for (final IBond bond : structure.bonds()) {
             ordinals[k] = bond.getStereo()
-                              .ordinal();
+                    .ordinal();
             k++;
         }
         // set 2D coordinates
@@ -773,8 +752,7 @@ public class Utils {
             bond.setStereo(IBond.Stereo.values()[ordinals[k]]);
 
             k++;
-            if (k
-                    >= ordinals.length) {
+            if (k >= ordinals.length) {
                 break;
             }
         }

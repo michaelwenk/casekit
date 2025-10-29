@@ -185,7 +185,10 @@ public class HOSECodeShiftStatistics {
             for (final Map.Entry<String, List<Double>> solvents : hoseCodes.getValue()
                     .entrySet()) {
                 values = new ArrayList<>(solvents.getValue());
-                values = Statistics.removeOutliers(values, 1.5);
+                // values = Statistics.removeOutliers(values, 1.5);
+                if (values.size() == 0) {
+                    continue;
+                }
                 hoseCodeShiftStatistics.get(hoseCodes.getKey())
                         .put(solvents.getKey(),
                                 new Double[] { (double) values.size(), Collections.min(values),
@@ -216,7 +219,7 @@ public class HOSECodeShiftStatistics {
                         withExplicitH, hoseCodeShifts);
             }
             return HOSECodeShiftStatistics.buildHOSECodeShiftStatistics(hoseCodeShifts);
-        } catch (final FileNotFoundException | CDKException e) {
+        } catch (final CDKException | IOException e) {
             e.printStackTrace();
         }
 
